@@ -6,9 +6,13 @@
 </head>
 <body>
 	<h1>新規ユーザー登録</h1>
+	<div th:if="${error}" style="color: #f00;">
+		<p th:text="${error}"></p>
+	</div>
 	<form th:action="@{/register}" method="post">
 		<label>ユーザー名：<input type="text" name="username" required></label><br>
 		<label>パスワード：<input type="password" name="password" required></label><br>
+		<label>確認用パスワード：<input type="password" name="confirmPassword" required></label><br>
 		<button type="submit">登録</button>
 	</form>
 </body>

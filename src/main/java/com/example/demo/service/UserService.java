@@ -27,4 +27,8 @@ public class UserService {
 		userRepository.save(user);
 	}
 
+	public boolean isUsernameTaken(String username) {
+		return userRepository.findByUsername(username).isPresent();
+	}
+
 }
