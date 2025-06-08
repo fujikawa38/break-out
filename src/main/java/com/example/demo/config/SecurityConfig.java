@@ -22,7 +22,7 @@ public class SecurityConfig {
 						.requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll().anyRequest()
 						.fullyAuthenticated())
 				.formLogin(form -> form
-						.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
+						.loginPage("/login").defaultSuccessUrl("/index", true).permitAll())
 				.logout(logout -> logout
 						.logoutSuccessUrl("/login?logout").permitAll());
 
