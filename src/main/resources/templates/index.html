@@ -3,13 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <title>ブロック崩し</title>
+<style>
+	canvas {
+		background: #000;
+		display: block;
+		margin: 20px auto;
+	}
+	#startButton {
+		display: block;
+		margin: 0 auto;
+		padding: 10px 20px;
+		font-size: 16px;
+	}
+</style>
 </head>
 <body>
 	<h1>ブロック崩し タイムアタック</h1>
 	<div></div>
 	
+	<canvas id="gameCanvas" width="480" height="320"></canvas>
+	<button id="startButton">スタート</button>
+	
 	<form th:action="@{/logout}" method="post">
 		<button type="submit">ログアウト</button>
 	</form>
+	
+	<script src="/js/game.js"></script>
 </body>
 </html>
