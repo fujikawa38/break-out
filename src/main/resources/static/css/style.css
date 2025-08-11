@@ -1,0 +1,14 @@
+@charset "UTF-8";
+
+canvas {
+	background: #000;
+	display: block;
+	margin: 20px auto;
+}
+
+#startButton {
+	display: block;
+	margin: 0 auto;
+	padding: 10px 20px;
+	font-size: 16px;
+}
