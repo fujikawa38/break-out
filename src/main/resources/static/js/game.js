@@ -18,6 +18,15 @@ let leftPressed = false;
 let isRunning = false;
 let score = 0;
 
+// アイテム関連設定
+const ITEM_TYPES = [
+	{ type: "speedUp", chance: 0.02 },
+	{ type: "paddleSizeUp", chance: 0.02 },
+	{ type: "pierce", chance: 0.02 }
+];
+let items = [];
+let pierceMode = false;
+
 // ブロック設定
 const brickColors = [
 	"#FFB3BA", "#FFDEBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E6BAFF", "#FFD6E0", "#FFF0BA", "#D4F0F0", "#FFCCE5"
@@ -57,10 +66,17 @@ function keyUpHandler(e) {
 function resetGame() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
+	ballSpeed = 3;
 	dx = ballSpeed;
 	dy = -ballSpeed;
+	paddleWidth = 75;
+	paddleSpeed = 7;
 	paddleX = (canvas.width - paddleWidth) / 2;
 	score = 0;
+	items = [];
+	pierceMode = false;
+	rightPressed = false;
+	leftPressed = false;
 	initBricks();
 }
 
@@ -72,6 +88,19 @@ function initBricks() {
 		let rowColor = brickColors[Math.floor(Math.random() * brickColors.length)];
 		for (let c = 0; c < brickColumnCount; c++) {
 			bricks[r][c] = { x : 0, y : 0, status : 1, color: rowColor};
+		}
+	}
+}
+
+// アイテム生成
+function createItem(x, y) {
+	let r = Math.random();
+	let sum = 0;
+	for (let itemDef of ITEM_TYPES) {
+		sum += itemDef.chance;
+		if (r < sum) {
+			items.push({x: x, y: y, width: 20, height: 20, type: itemDef.type, speed: 2});
+			break;
 		}
 	}
 }
@@ -118,6 +147,42 @@ function drawScore() {
 	ctx.fillText("Score: " + score, 8, 20);
 }
 
+function drawItems() {
+	items.forEach(item => {
+		ctx.fillStyle = (item.type === "speedUp") ? "#FF6347" : (item.type === "paddleSizeUp") ? "#4169E1" : "#FFD700";
+		ctx.fillRect(item.x, item.y, item.width, item.height);
+	});
+}
+
+function updateItems() {
+	items.forEach((item, index) => {
+		item.y += item.speed;
+		
+		if (item.y + item.height >= canvas.height - paddleHeight && item.x < paddleX + paddleWidth && item.x + item.width > paddleX) {
+			activateItem(item.type);
+			items.splice(index, 1);
+		}
+		
+		if (item.y > canvas.height) {
+			items.splice(index, 1);
+		}
+	});
+}
+
+// アイテム効果
+function activateItem(type) {
+	if (type === "speedUp") {
+		ballSpeed *= 1.3;
+		dx *= 1.3;
+		dy *= 1.3;
+		paddleSpeed *= 1.3;
+	} else if (type === "paddleSizeUp") {
+		paddleWidth *= 1.2;
+	} else if (type === "pierce") {
+		pierceMode = true;
+	}
+}
+
 // 当たり判定
 function collisionDetection() {
 	for (let c = 0; c < brickColumnCount; c++) {
@@ -125,9 +190,16 @@ function collisionDetection() {
 			let b = bricks[r][c];
 			if (b.status === 1) {
 				if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
-					dy = -dy;
+					
+					createItem(b.x + brickWidth/2 - 10, b.y);
+					
+					if (!pierceMode) {
+						dy = -dy;
+					}
+
 					b.status = 0;
 					score++;
+					
 					if (score === brickRowCount * brickColumnCount) {
 						alert("クリア");
 						isRunning = false;
@@ -149,6 +221,8 @@ function draw() {
 	drawBricks();
 	drawBall();
 	drawPaddle();
+	drawItems();
+	updateItems();
 	drawScore();
 	collisionDetection();
 	
@@ -156,7 +230,11 @@ function draw() {
 		dx = -dx;
 	}
 	if (y + dy < ballRadius) {
-		dy = -dy;
+		if (pierceMode) {
+			pierceMode = false;
+		} else {
+			dy = -dy;
+		}
 	} else if (y + dy > canvas.height - ballRadius) {
 		if (x > paddleX && x < paddleX + paddleWidth) {
 			let paddleCenter = paddleX + paddleWidth / 2;
