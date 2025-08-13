@@ -3,16 +3,25 @@ const ctx = canvas.getContext("2d");
 const startButton = document.getElementById("startButton");
 
 // ゲーム変数
-let x, y, dx, dy, paddleX;
-const ballRadius = 10;
-const paddleHeight = 10;
-const paddleWidth = 75;
+let paddleSpeed = 7;
+let ballSpeed = 3;
+let ballRadius = 10
+let x = canvas.width / 2;
+let y = canvas.height - 30;
+let dx = ballSpeed;
+let dy = -ballSpeed;
+let paddleHeight = 10;
+let paddleWidth = 75;
+let paddleX = (canvas.width - paddleWidth) / 2;
 let rightPressed = false;
 let leftPressed = false;
 let isRunning = false;
 let score = 0;
 
 // ブロック設定
+const brickColors = [
+	"#FFB3BA", "#FFDEBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E6BAFF", "#FFD6E0", "#FFF0BA", "#D4F0F0", "#FFCCE5"
+];
 const brickRowCount = 3;
 const brickColumnCount = 6;
 const brickWidth = 80;
@@ -48,8 +57,8 @@ function keyUpHandler(e) {
 function resetGame() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
-	dx = 2;
-	dy = -2;
+	dx = ballSpeed;
+	dy = -ballSpeed;
 	paddleX = (canvas.width - paddleWidth) / 2;
 	score = 0;
 	initBricks();
@@ -58,10 +67,11 @@ function resetGame() {
 // ブロック初期化
 function initBricks() {
 	bricks = [];
-	for (let c = 0; c < brickColumnCount; c++) {
-		bricks[c] = [];
-		for (let r = 0; r < brickRowCount; r++) {
-			bricks[c][r] = { x : 0, y : 0, status : 1};
+	for (let r = 0; r < brickRowCount; r++) {
+		bricks[r] = [];
+		let rowColor = brickColors[Math.floor(Math.random() * brickColors.length)];
+		for (let c = 0; c < brickColumnCount; c++) {
+			bricks[r][c] = { x : 0, y : 0, status : 1, color: rowColor};
 		}
 	}
 }
@@ -86,14 +96,15 @@ function drawPaddle() {
 function drawBricks() {
 	for (let c = 0; c < brickColumnCount; c++) {
 		for (let r = 0; r < brickRowCount; r++) {
-			if (bricks[c][r].status === 1) {
+			let b = bricks[r][c];
+			if (b.status === 1) {
 				let brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
 				let brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
-				bricks[c][r].x = brickX;
-				bricks[c][r].y = brickY;
+				b.x = brickX;
+				b.y = brickY;
 				ctx.beginPath();
 				ctx.rect(brickX, brickY, brickWidth, brickHeight);
-				ctx.fillStyle = "#ff9933";
+				ctx.fillStyle = b.color;
 				ctx.fill();
 				ctx.closePath();
 			}
@@ -111,7 +122,7 @@ function drawScore() {
 function collisionDetection() {
 	for (let c = 0; c < brickColumnCount; c++) {
 		for (let r = 0; r < brickRowCount; r++) {
-			let b = bricks[c][r];
+			let b = bricks[r][c];
 			if (b.status === 1) {
 				if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
 					dy = -dy;
@@ -148,7 +159,11 @@ function draw() {
 		dy = -dy;
 	} else if (y + dy > canvas.height - ballRadius) {
 		if (x > paddleX && x < paddleX + paddleWidth) {
-			dy = -dy;
+			let paddleCenter = paddleX + paddleWidth / 2;
+			let hitPos = (x - paddleCenter) / (paddleWidth / 2);
+			let maxSpeed = 4;
+			dx = hitPos * maxSpeed;
+			dy = -Math.abs(dy);
 		} else {
 			alert("ゲームオーバー！");
 			isRunning = false;
@@ -162,9 +177,9 @@ function draw() {
 	y += dy;
 	
 	if (rightPressed && paddleX < canvas.width - paddleWidth) {
-		paddleX += 5;
+		paddleX += paddleSpeed;
 	} else if (leftPressed && paddleX > 0) {
-		paddleX -= 5;
+		paddleX -= paddleSpeed;
 	}
 	
 	requestAnimationFrame(draw);
