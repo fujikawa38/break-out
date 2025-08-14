@@ -19,6 +19,7 @@ let isRunning = false;
 let score = 0;
 let currentStage = 1;
 let maxStage = 5;
+let stageGate = null;
 
 // アイテム関連設定
 const ITEM_TYPES = [
@@ -117,8 +118,8 @@ function initBricks() {
 function resetPosition() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
-	dx = Math.random();
-	dy = -ballSpeed;
+//	dx = Math.random();
+//	dy = -ballSpeed;
 	paddleX = (canvas.width - paddleWidth) / 2;
 }
 
@@ -206,6 +207,13 @@ function updateItems() {
 	});
 }
 
+function drawStageGate() {
+	if (stageGate && stageGate.active) {
+		ctx.fillStyle = "#00FF99";
+		ctx.fillRect(stageGate.x, 0, stageGate.width, stageGate.height);
+	}
+}
+
 // アイテム効果
 function activateItem(type) {
 	if (type === "speedUp") {
@@ -242,8 +250,29 @@ function collisionDetection() {
 	}
 }
 
+function checkGateCollision() {
+	if (stageGate && stageGate.active) {
+		if (x > stageGate.x && x < stageGate.x + stageGate.width && y + ballRadius > 0 && y - ballRadius < 0 + stageGate.height) {
+			stageGate.active = false;
+			if (currentStage < maxStage) {
+				currentStage++;
+				resetPosition();
+				setStage(currentStage);
+				initBricks();
+			} else {
+				alert("オールクリア！");
+				isRunning = false;
+				startButton.disabled = false;
+				resetGame();
+			}
+		}
+	}
+}
+
 // ステージクリア判定
 function checkStageClear() {
+	if (stageGate && stageGate.active) return;
+	
 	let allCleared = true;
 	for (let row of bricks) {
 		for (let b of row) {
@@ -253,20 +282,9 @@ function checkStageClear() {
 			}
 		}
 	}
-	
+
 	if (allCleared) {
-		if (currentStage < maxStage) {
-			currentStage++;
-			alert("ステージ" + currentStage + "へ");
-			resetPosition();
-			setStage(currentStage);
-			initBricks();
-		} else {
-			alert("オールクリア！");
-			isRunning = false;
-			startButton.disabled = false;
-			resetGame();
-		}
+		stageGate = { x: canvas.width / 2 - 100, y: canvas.height - 100, width: 200, height: 10, active: true};
 	}
 }
 
@@ -284,7 +302,9 @@ function draw() {
 	drawItems();
 	updateItems();
 	drawInfo();
+	drawStageGate();
 	collisionDetection();
+	checkGateCollision();
 	
 	if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
 		dx = -dx;
