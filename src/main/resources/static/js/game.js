@@ -5,18 +5,20 @@ const startButton = document.getElementById("startButton");
 // ゲーム変数
 let paddleSpeed = 7;
 let ballSpeed = 3;
-let ballRadius = 10
+let ballRadius = 5;
 let x = canvas.width / 2;
 let y = canvas.height - 30;
-let dx = ballSpeed;
+let dx = Math.random();
 let dy = -ballSpeed;
 let paddleHeight = 10;
-let paddleWidth = 75;
+let paddleWidth = 70;
 let paddleX = (canvas.width - paddleWidth) / 2;
 let rightPressed = false;
 let leftPressed = false;
 let isRunning = false;
 let score = 0;
+let currentStage = 1;
+let maxStage = 5;
 
 // アイテム関連設定
 const ITEM_TYPES = [
@@ -27,13 +29,15 @@ const ITEM_TYPES = [
 let items = [];
 let pierceMode = false;
 
+
 // ブロック設定
 const brickColors = [
 	"#FFB3BA", "#FFDEBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E6BAFF", "#FFD6E0", "#FFF0BA", "#D4F0F0", "#FFCCE5"
 ];
-const brickRowCount = 3;
-const brickColumnCount = 6;
-const brickWidth = 80;
+const totalWidth = 600;
+let brickRowCount = 3;
+let brickColumnCount = 6;
+let brickWidth = 0;
 const brickHeight = 20;
 const brickPadding = 10;
 const brickOffsetTop = 30;
@@ -67,7 +71,7 @@ function resetGame() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
 	ballSpeed = 3;
-	dx = ballSpeed;
+	dx = Math.random();
 	dy = -ballSpeed;
 	paddleWidth = 75;
 	paddleSpeed = 7;
@@ -77,7 +81,18 @@ function resetGame() {
 	pierceMode = false;
 	rightPressed = false;
 	leftPressed = false;
+	setStage(currentStage);
 	initBricks();
+}
+
+// ステージ設定
+function setStage(stage) {
+	currentStage = stage;
+	
+	brickColumnCount = 6 + (stage - 1) * 1;
+	brickRowCount = 3 + (stage - 1) * 1;
+	
+	brickWidth = (totalWidth - (brickPadding * (brickColumnCount - 1)) - brickOffsetLeft * 2) / brickColumnCount;
 }
 
 // ブロック初期化
@@ -90,6 +105,15 @@ function initBricks() {
 			bricks[r][c] = { x : 0, y : 0, status : 1, color: rowColor};
 		}
 	}
+}
+
+// パドルとボールの位置初期化
+function resetPosition() {
+	x = canvas.width / 2;
+	y = canvas.height - 30;
+	dx = Math.random();
+	dy = -ballSpeed;
+	paddleX = (canvas.width - paddleWidth) / 2;
 }
 
 // アイテム生成
@@ -199,15 +223,36 @@ function collisionDetection() {
 
 					b.status = 0;
 					score++;
-					
-					if (score === brickRowCount * brickColumnCount) {
-						alert("クリア");
-						isRunning = false;
-						startButton.disabled = false;
-						resetGame();
-					}
 				}
 			}
+		}
+	}
+}
+
+// ステージクリア判定
+function checkStageClear() {
+	let allCleared = true;
+	for (let row of bricks) {
+		for (let b of row) {
+			if (b.status === 1) {
+				allCleared = false;
+				break;
+			}
+		}
+	}
+	
+	if (allCleared) {
+		if (currentStage < maxStage) {
+			currentStage++;
+			alert("ステージ" + currentStage + "へ");
+			resetPosition();
+			setStage(currentStage);
+			initBricks();
+		} else {
+			alert("オールクリア！");
+			isRunning = false;
+			startButton.disabled = false;
+			resetGame();
 		}
 	}
 }
@@ -261,6 +306,7 @@ function draw() {
 	}
 	
 	requestAnimationFrame(draw);
+	checkStageClear();
 }
 
 // スタートボタン処理
