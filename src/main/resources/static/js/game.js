@@ -44,6 +44,10 @@ const brickOffsetTop = 30;
 const brickOffsetLeft = 30;
 let bricks = [];
 
+// タイム表示用変数
+let startTime;
+let elapsedTime = 0;
+
 // イベント登録
 document.addEventListener("keydown", keyDownHandler);
 document.addEventListener("keyup", keyUpHandler);
@@ -81,6 +85,8 @@ function resetGame() {
 	pierceMode = false;
 	rightPressed = false;
 	leftPressed = false;
+	currentStage = 1;
+	elapsedTime = 0;
 	setStage(currentStage);
 	initBricks();
 }
@@ -165,10 +171,17 @@ function drawBricks() {
 	}
 }
 
-function drawScore() {
+function drawInfo() {
 	ctx.font = "16px Arial";
 	ctx.fillStyle = "#fff";
+	
 	ctx.fillText("Score: " + score, 8, 20);
+	ctx.fillText("Stage: " + currentStage, canvas.width - 80, 20);
+	
+	let minutes = Math.floor(elapsedTime / 60000);
+	let seconds = Math.floor((elapsedTime % 60000) / 1000);
+	let displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+	ctx.fillText("Time: " + displayTime, 8, 40);
 }
 
 function drawItems() {
@@ -261,6 +274,8 @@ function checkStageClear() {
 function draw() {
 	if (!isRunning) return;
 	
+	elapsedTime = new Date().getTime() - startTime;
+	
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	
 	drawBricks();
@@ -268,7 +283,7 @@ function draw() {
 	drawPaddle();
 	drawItems();
 	updateItems();
-	drawScore();
+	drawInfo();
 	collisionDetection();
 	
 	if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
@@ -313,6 +328,7 @@ function draw() {
 function startGame() {
 	resetGame();
 	isRunning = true;
+	startTime = new Date().getTime();
 	startButton.disabled = true;
 	draw();
 }
