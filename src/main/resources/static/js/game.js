@@ -1,25 +1,25 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const startButton = document.getElementById("startButton");
 
 // ゲーム変数
-let paddleSpeed = 7;
-let ballSpeed = 3;
+let paddleSpeed = 5;
+let ballSpeed = 2;
 let ballRadius = 5;
 let x = canvas.width / 2;
 let y = canvas.height - 30;
-let dx = Math.random();
+let dx = ballSpeed * (Math.random() < 0.5 ? -1 : 1);
 let dy = -ballSpeed;
 let paddleHeight = 10;
-let paddleWidth = 70;
+let paddleWidth = 90;
 let paddleX = (canvas.width - paddleWidth) / 2;
 let rightPressed = false;
 let leftPressed = false;
 let isRunning = false;
 let score = 0;
 let currentStage = 1;
-let maxStage = 5;
+const maxStage = 5;
 let stageGate = null;
+let gameOver = false;
 
 // アイテム関連設定
 const ITEM_TYPES = [
@@ -35,14 +35,14 @@ let pierceMode = false;
 const brickColors = [
 	"#FFB3BA", "#FFDEBA", "#FFFFBA", "#BAFFC9", "#BAE1FF", "#E6BAFF", "#FFD6E0", "#FFF0BA", "#D4F0F0", "#FFCCE5"
 ];
-const totalWidth = 600;
+//const totalWidth = 600;
 let brickRowCount = 3;
 let brickColumnCount = 6;
 let brickWidth = 0;
 const brickHeight = 20;
 const brickPadding = 10;
 const brickOffsetTop = 30;
-const brickOffsetLeft = 30;
+let brickOffsetLeft = 30;
 let bricks = [];
 
 // タイム表示用変数
@@ -52,7 +52,6 @@ let elapsedTime = 0;
 // イベント登録
 document.addEventListener("keydown", keyDownHandler);
 document.addEventListener("keyup", keyUpHandler);
-startButton.addEventListener("click", startGame);
 
 // キー操作
 function keyDownHandler(e) {
@@ -60,6 +59,10 @@ function keyDownHandler(e) {
 		rightPressed = true;
 	} else if (e.key === "left" || e.key === "ArrowLeft") {
 		leftPressed = true;
+	}
+	
+	if (e.key === " " && !isRunning) {
+		startGame();
 	}
 }
 
@@ -75,11 +78,11 @@ function keyUpHandler(e) {
 function resetGame() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
-	ballSpeed = 3;
-	dx = Math.random();
+	ballSpeed = 2;
+	dx = ballSpeed * (Math.random() < 0.5 ? -1 : 1);
 	dy = -ballSpeed;
-	paddleWidth = 75;
-	paddleSpeed = 7;
+	paddleWidth = 90;
+	paddleSpeed = 5;
 	paddleX = (canvas.width - paddleWidth) / 2;
 	score = 0;
 	items = [];
@@ -90,6 +93,7 @@ function resetGame() {
 	elapsedTime = 0;
 	setStage(currentStage);
 	initBricks();
+	gameOver = false;
 }
 
 // ステージ設定
@@ -99,7 +103,7 @@ function setStage(stage) {
 	brickColumnCount = 6 + (stage - 1) * 1;
 	brickRowCount = 3 + (stage - 1) * 1;
 	
-	brickWidth = (totalWidth - (brickPadding * (brickColumnCount - 1)) - brickOffsetLeft * 2) / brickColumnCount;
+	brickWidth = (canvas.width - (brickPadding * (brickColumnCount - 1)) - brickOffsetLeft * 2) / brickColumnCount;
 }
 
 // ブロック初期化
@@ -118,8 +122,6 @@ function initBricks() {
 function resetPosition() {
 	x = canvas.width / 2;
 	y = canvas.height - 30;
-//	dx = Math.random();
-//	dy = -ballSpeed;
 	paddleX = (canvas.width - paddleWidth) / 2;
 }
 
@@ -130,7 +132,7 @@ function createItem(x, y) {
 	for (let itemDef of ITEM_TYPES) {
 		sum += itemDef.chance;
 		if (r < sum) {
-			items.push({x: x, y: y, width: 20, height: 20, type: itemDef.type, speed: 2});
+			items.push({x: x, y: y, width: 20, height: 20, type: itemDef.type, speed: 1});
 			break;
 		}
 	}
@@ -262,8 +264,7 @@ function checkGateCollision() {
 			} else {
 				alert("オールクリア！");
 				isRunning = false;
-				startButton.disabled = false;
-				resetGame();
+				gameOver = true;
 			}
 		}
 	}
@@ -290,7 +291,21 @@ function checkStageClear() {
 
 // メインループ
 function draw() {
-	if (!isRunning) return;
+	if (!isRunning) { 
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = "#fff";
+		ctx.font = "bold 24px Arial";
+		
+		if (gameOver) {
+			drawCenteredText("ゲームオーバー！", canvas.height / 2 - 20);
+			drawCenteredText("スペースでリスタート", canvas.height / 2 + 20);
+		} else {
+			drawCenteredText("スペースを押してスタート", canvas.height / 2);
+		}
+		
+		requestAnimationFrame(draw);
+		return;
+	}
 	
 	elapsedTime = new Date().getTime() - startTime;
 	
@@ -323,10 +338,9 @@ function draw() {
 			dx = hitPos * maxSpeed;
 			dy = -Math.abs(dy);
 		} else {
-			alert("ゲームオーバー！");
+//			alert("ゲームオーバー！");
 			isRunning = false;
-			startButton.disabled = false;
-			resetGame();
+			gameOver = true;
 			return;
 		}
 	}
@@ -344,11 +358,19 @@ function draw() {
 	checkStageClear();
 }
 
-// スタートボタン処理
+// 文字の中央寄せ
+function drawCenteredText(text, y) {
+	const textWidth = ctx.measureText(text).width;
+	const x = (canvas.width - textWidth) / 2;
+	ctx.fillText(text, x, y);
+}
+
+// スタート処理
 function startGame() {
 	resetGame();
 	isRunning = true;
 	startTime = new Date().getTime();
-	startButton.disabled = true;
 	draw();
 }
+
+draw();
