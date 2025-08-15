@@ -21,6 +21,11 @@ const maxStage = 5;
 let stageGate = null;
 let gameOver = false;
 
+// 最終スコアとタイムの保存
+let finalScore = 0;
+let finalTime = 0;
+let allCleared = 0;
+
 // アイテム関連設定
 const ITEM_TYPES = [
 	{ type: "speedUp", chance: 0.02 },
@@ -94,6 +99,7 @@ function resetGame() {
 	setStage(currentStage);
 	initBricks();
 	gameOver = false;
+	allCleared = false;
 }
 
 // ステージ設定
@@ -262,9 +268,10 @@ function checkGateCollision() {
 				setStage(currentStage);
 				initBricks();
 			} else {
-				alert("オールクリア！");
 				isRunning = false;
 				gameOver = true;
+				allCleared = true;
+				finalTime = elapsedTime;
 			}
 		}
 	}
@@ -297,8 +304,18 @@ function draw() {
 		ctx.font = "bold 24px Arial";
 		
 		if (gameOver) {
-			drawCenteredText("ゲームオーバー！", canvas.height / 2 - 20);
-			drawCenteredText("スペースでリスタート", canvas.height / 2 + 20);
+			if (allCleared) {
+				drawCenteredText("オールクリア！", canvas.height / 2 - 40);
+				let minutes = Math.floor(finalTime / 60000);
+				let seconds = Math.floor((finalTime % 60000) / 1000);
+				let displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+				drawCenteredText("クリアタイム: " + displayTime, canvas.height / 2);
+				drawCenteredText("スペースでリスタート", canvas.height / 2 + 40);
+			} else {
+				drawCenteredText("ゲームオーバー！", canvas.height / 2 - 40);
+				drawCenteredText("最終スコア: " + finalScore, canvas.height / 2);
+				drawCenteredText("スペースでリスタート", canvas.height / 2 + 40);
+			}
 		} else {
 			drawCenteredText("スペースを押してスタート", canvas.height / 2);
 		}
@@ -338,9 +355,9 @@ function draw() {
 			dx = hitPos * maxSpeed;
 			dy = -Math.abs(dy);
 		} else {
-//			alert("ゲームオーバー！");
 			isRunning = false;
 			gameOver = true;
+			finalScore = score;
 			return;
 		}
 	}
