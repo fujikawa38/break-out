@@ -16,6 +16,20 @@
 		<button type="submit">ログアウト</button>
 	</form>
 	
+	<div id="ranking">
+		<h2>ランキング TOP10</h2>
+		<ol>
+			<li th:each="score : ${top10}">
+				<span th:text="${score.user.username}">User</span>:<span th:text="${score.time}">0.0</span>秒
+			</li>
+		</ol>
+	</div>
+	
+	<div th:if="${myBest != null}">
+		<h3>自分のベストタイム</h3>
+		<p th:text="${myBest.time} + '秒'"></p>
+	</div>
+	
 	<script src="/js/game.js"></script>
 </body>
 </html>
