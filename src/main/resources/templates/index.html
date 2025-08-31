@@ -9,27 +9,41 @@
 </head>
 <body>
 	<h1>ブロック崩し タイムアタック</h1>
+	<div th:if="${principal != null}">
+		<p>こんにちは、<span th:text="${principal.name}"></span>さん</p>
+		<div th:if="${bestScore != null}">
+			<p>あなたのベストタイム：<span th:text="${#numbers.formatDecimal(bestScore.time / 1000, 1, 2)}"></span>秒</p>
+		</div>
+		<div th:if="${bestScore == null}">
+			<p>まだスコアがありません</p>
+		</div>
+	</div>
 	<div></div>
 	
 	<canvas id="gameCanvas" width="600" height="500"></canvas>
-<!--	<button id="startButton">スタート</button>-->
 	
 	<form th:action="@{/logout}" method="post">
 		<button type="submit">ログアウト</button>
 	</form>
-	
-	<div id="ranking">
-		<h2>ランキング TOP10</h2>
-		<ol>
-			<li th:each="score : ${top10}">
-				<span th:text="${score.user.username}">User</span>:<span th:text="${score.time}">0.0</span>秒
-			</li>
-		</ol>
-	</div>
-	
-	<div th:if="${myBest != null}">
-		<h3>自分のベストタイム</h3>
-		<p th:text="${myBest.time} + '秒'"></p>
+
+	<div class="ranking-container">
+		<h2>ランキング</h2>
+		<table class="ranking-table">
+			<thead>
+				<tr>
+					<th>順位</th>
+					<th>ユーザー名</th>
+					<th>タイム</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="score, stat : ${topScores}">
+					<td th:text="${stat.index + 1}"></td>
+					<td th:text="${score.user.username}"></td>
+					<td th:text="${#numbers.formatDecimal(score.time / 1000, 1, 2)} + '秒'"></td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 	
 	<script src="/js/game.js"></script>

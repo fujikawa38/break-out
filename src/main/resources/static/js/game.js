@@ -69,8 +69,12 @@ function keyDownHandler(e) {
 		leftPressed = true;
 	}
 	
-	if (e.key === " " && !isRunning) {
-		startGame();
+	if (e.key === " ") {
+		if (gameOver || allCleared) {
+			window.location.reload();
+		} else if (!isRunning) {
+			startGame();
+		}
 	}
 }
 
@@ -309,10 +313,10 @@ function draw() {
 		if (gameOver) {
 			if (allCleared) {
 				drawCenteredText("オールクリア！", canvas.height / 2 - 40);
-				let minutes = Math.floor(finalTime / 60000);
-				let seconds = Math.floor((finalTime % 60000) / 1000);
-				let displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-				drawCenteredText("クリアタイム: " + displayTime, canvas.height / 2);
+//				let minutes = Math.floor(finalTime / 60000);
+//				let seconds = Math.floor((finalTime % 60000) / 1000);
+//				let displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+				drawCenteredText("クリアタイム: " + (finalTime / 1000).toFixed(2) + "秒", canvas.height / 2);
 				drawCenteredText("スペースでリスタート", canvas.height / 2 + 40);
 			} else {
 				drawCenteredText("ゲームオーバー！", canvas.height / 2 - 40);
@@ -392,6 +396,12 @@ function gameClear(time) {
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken},
 		body: 'time=' + encodeURIComponent(time)
 	}).then(response => {
+		if (response.ok) {
+			console.log("スコアが正常に保存されました");
+//			window.location.reload();
+		} else {
+			console.error('Error saving score:', error);
+		}
 	}).catch(error => {
 		console.error('Error saving score:', error);
 	})
