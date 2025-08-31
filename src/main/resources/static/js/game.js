@@ -1,3 +1,6 @@
+const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -24,7 +27,7 @@ let gameOver = false;
 // 最終スコアとタイムの保存
 let finalScore = 0;
 let finalTime = 0;
-let allCleared = 0;
+let allCleared = false;
 
 // アイテム関連設定
 const ITEM_TYPES = [
@@ -100,6 +103,7 @@ function resetGame() {
 	initBricks();
 	gameOver = false;
 	allCleared = false;
+	stageGate = null;
 }
 
 // ステージ設定
@@ -187,10 +191,8 @@ function drawInfo() {
 	ctx.fillText("Score: " + score, 8, 20);
 	ctx.fillText("Stage: " + currentStage, canvas.width - 80, 20);
 	
-	let minutes = Math.floor(elapsedTime / 60000);
-	let seconds = Math.floor((elapsedTime % 60000) / 1000);
-	let displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-	ctx.fillText("Time: " + displayTime, 8, 40);
+	let seconds = (elapsedTime / 1000).toFixed(2);
+	ctx.fillText("Time: " + seconds, 8, 40);
 }
 
 function drawItems() {
@@ -272,6 +274,7 @@ function checkGateCollision() {
 				gameOver = true;
 				allCleared = true;
 				finalTime = elapsedTime;
+				gameClear(finalTime);
 			}
 		}
 	}
@@ -380,6 +383,18 @@ function drawCenteredText(text, y) {
 	const textWidth = ctx.measureText(text).width;
 	const x = (canvas.width - textWidth) / 2;
 	ctx.fillText(text, x, y);
+}
+
+// ゲームクリア処理
+function gameClear(time) {
+	fetch('/save-score', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken},
+		body: 'time=' + encodeURIComponent(time)
+	}).then(response => {
+	}).catch(error => {
+		console.error('Error saving score:', error);
+	})
 }
 
 // スタート処理
