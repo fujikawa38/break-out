@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>ログイン</title>
+	<meta charset="UTF-8">
+	<title>ログイン</title>
+	<link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
-	<h1>ブロック崩し タイムアタック</h1>
+	<div class="container">
+		<h1>ブロック崩し<br>タイムアタック</h1>
 	
-	<div th:if="${param.error}" style="color: #f00;">
-		<p>ユーザー名またはパスワードが間違っています。</p>
+		<div th:if="${param.error}" class="error">
+			<p>ユーザー名またはパスワードが間違っています。</p>
+		</div>
+	
+		<div th:if="${param.logout}" class="success">
+			<p>ログアウトしました。</p>
+		</div>
+	
+		<form th:action="@{/login}" method="post">
+			<label>ユーザー名：<input type="text" name="username"></label><br>
+			<label>パスワード：<input type="password" name="password"></label><br>
+			<button type="submit">ログイン</button>
+		</form>
+	
+		<p>ユーザー登録は<a th:href="@{/register}">こちら</a></p>
 	</div>
-	
-	<div th:if="${param.logout}" style="color: #f00;">
-		<p>ログアウトしました。</p>
-	</div>
-	
-	<form th:action="@{/login}" method="post">
-		<label>ユーザー名：<input type="text" name="username"></label><br>
-		<label>パスワード：<input type="password" name="password"></label><br>
-		<button type="submit">ログイン</button>
-	</form>
-	
-	<p>ユーザー登録は<a th:href="@{/register}">こちら</a></p>
 
 </body>
 </html>

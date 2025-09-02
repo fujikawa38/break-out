@@ -8,27 +8,45 @@
 	<title>ブロック崩し</title>
 </head>
 <body>
-	<h1>ブロック崩し タイムアタック</h1>
-	<div th:if="${principal != null}">
-		<p>こんにちは、<span th:text="${principal.name}"></span>さん</p>
-		<div th:if="${bestScore != null}">
-			<p>あなたのベストタイム：<span th:text="${#numbers.formatDecimal(bestScore.time / 1000, 1, 2)}"></span>秒</p>
+	<div class="main_container">
+		<h1>ブロック崩し タイムアタック</h1>
+		
+		<div th:if="${principal != null}" class="user_info">
+			<p>こんにちは、<span th:text="${principal.name}"></span>さん</p>
+			<div th:if="${bestScore != null}">
+				<p>あなたのベストタイム：<span th:text="${#numbers.formatDecimal(bestScore.time / 1000, 1, 2)}"></span>秒</p>
+			</div>
+			<div th:if="${bestScore == null}">
+				<p>まだスコアがありません</p>
+			</div>
 		</div>
-		<div th:if="${bestScore == null}">
-			<p>まだスコアがありません</p>
+	
+		<canvas id="gameCanvas" width="600" height="500"></canvas>
+		
+		<div class="item_legend">
+			<h3>アイテム</h3>
+			<div class="item_legend_item">
+				<div class="item_legend_color item_speed_up"></div>
+				<span>スピードアップ</span>
+			</div>
+			<div class="item_legend_item">
+				<div class="item_legend_color item_paddle_sizeup"></div>
+				<span>パドルサイズアップ</span>
+			</div>
+			<div class="item_legend_item">
+				<div class="item_legend_color item_pierce"></div>
+				<span>ブロック貫通（一度のみ）</span>
+			</div>
 		</div>
+	
+		<form th:action="@{/logout}" method="post" class="logout_form">
+			<button type="submit">ログアウト</button>
+		</form>
 	</div>
-	<div></div>
-	
-	<canvas id="gameCanvas" width="600" height="500"></canvas>
-	
-	<form th:action="@{/logout}" method="post">
-		<button type="submit">ログアウト</button>
-	</form>
 
-	<div class="ranking-container">
+	<div class="ranking_container">
 		<h2>ランキング</h2>
-		<table class="ranking-table">
+		<table class="ranking_table">
 			<thead>
 				<tr>
 					<th>順位</th>

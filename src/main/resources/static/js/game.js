@@ -70,6 +70,7 @@ function keyDownHandler(e) {
 	}
 	
 	if (e.key === " ") {
+		e.preventDefault();
 		if (gameOver || allCleared) {
 			window.location.reload();
 		} else if (!isRunning) {
